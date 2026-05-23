@@ -111,8 +111,6 @@ const Dashboard = (() => {
       })
       .join('');
 
-    // Attach event listeners via delegation
-    container.addEventListener('click', handleCardClick);
   };
 
   /**
@@ -122,6 +120,7 @@ const Dashboard = (() => {
   const handleCardClick = (e) => {
     const copyBtn = e.target.closest('.btn-copy-link');
     const portalBtn = e.target.closest('.btn-open-portal');
+    const createFirstBtn = e.target.closest('#btnCreateFirstMilestone');
 
     if (copyBtn) {
       const id = copyBtn.dataset.id;
@@ -133,6 +132,10 @@ const Dashboard = (() => {
     if (portalBtn) {
       const id = portalBtn.dataset.id;
       App.router.navigate(`#portal/${id}`);
+    }
+
+    if (createFirstBtn) {
+      openCreateModal();
     }
   };
 
@@ -191,6 +194,12 @@ const Dashboard = (() => {
 
     const btnSubmit = document.getElementById('submitCreateMilestone');
     if (btnSubmit) btnSubmit.addEventListener('click', handleCreateSubmit);
+
+    // Attach card click listener once to the container
+    const milestoneGrid = document.getElementById('milestoneGrid');
+    if (milestoneGrid) {
+      milestoneGrid.addEventListener('click', handleCardClick);
+    }
   };
 
   /** Show the create-milestone modal. */
@@ -264,10 +273,15 @@ const Dashboard = (() => {
       if (response.ok) {
         await App.loadMilestones();
 
-        // Clear form
-        ['msTitle', 'msClient', 'msClientEmail', 'msAmount', 'msDescription', 'msEmoji', 'msDueDate', 'msPreviewLabel'].forEach((id) => {
+        // Clear form inputs
+        ['msTitle', 'msClient', 'msClientEmail', 'msAmount', 'msDescription', 'msDueDate', 'msPreviewLabel'].forEach((id) => {
           const el = document.getElementById(id);
           if (el) el.value = '';
+        });
+        // Reset form selects
+        ['msEmoji', 'msFileType'].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.selectedIndex = 0;
         });
         if (fileInput) fileInput.value = '';
 

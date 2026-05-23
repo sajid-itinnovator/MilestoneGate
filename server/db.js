@@ -9,6 +9,13 @@ const db = new sqlite3.Database(dbPath, (err) => {
     console.error('Database connection failed:', err);
   } else {
     console.log('Connected to SQLite database at:', dbPath);
+    db.run('PRAGMA foreign_keys = ON;', (pragmaErr) => {
+      if (pragmaErr) {
+        console.error('Failed to enable foreign key support:', pragmaErr);
+      } else {
+        console.log('Foreign key support enabled.');
+      }
+    });
   }
 });
 
@@ -76,6 +83,11 @@ async function initDb() {
       createdAt TEXT NOT NULL,
       FOREIGN KEY (milestoneId) REFERENCES milestones(id) ON DELETE CASCADE
     )
+  `);
+
+  // Create index on comments(milestoneId) for faster queries
+  await query.run(`
+    CREATE INDEX IF NOT EXISTS idx_comments_milestone ON comments(milestoneId)
   `);
 
   console.log('SQLite database tables verified.');

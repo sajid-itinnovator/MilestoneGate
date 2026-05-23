@@ -80,7 +80,16 @@ const upload = multer({
       cb(null, file.fieldname + '-' + uniqueSuffix);
     }
   }),
-  limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedExtensions = ['.zip', '.pdf', '.png', '.jpg', '.jpeg', '.docx', '.fig', '.psd', '.md', '.txt'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (allowedExtensions.includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`Invalid file type. Allowed extensions: ${allowedExtensions.join(', ')}`));
+    }
+  }
 });
 
 // -------------------------------------------------------------
@@ -156,8 +165,12 @@ app.post('/api/milestones', upload.single('sourceFile'), async (req, res) => {
     return res.status(400).json({ error: 'Amount must be a positive integer.' });
   }
 
-  const filePath = req.file ? req.file.path : null;
-  const fileName = req.file ? req.file.originalname : null;
+  if (!req.file) {
+    return res.status(400).json({ error: 'Source deliverable file is required.' });
+  }
+
+  const filePath = req.file.path;
+  const fileName = req.file.originalname;
 
   const milestoneId = 'ms_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   const createdAt = new Date().toISOString();
@@ -327,6 +340,18 @@ app.get('/api/milestones/:id/download', async (req, res) => {
     console.error(err);
     res.status(500).json({ error: 'Download failed.' });
   }
+});
+
+// -------------------------------------------------------------
+// Express Global Error Handler
+// -------------------------------------------------------------
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({ error: `Upload error: ${err.message}` });
+  } else if (err) {
+    return res.status(400).json({ error: err.message });
+  }
+  next();
 });
 
 // -------------------------------------------------------------

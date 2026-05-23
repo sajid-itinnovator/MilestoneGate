@@ -522,70 +522,65 @@ const Portal = (() => {
   /*  Event Listener Setup                                               */
   /* ------------------------------------------------------------------ */
 
-  let listenersSetup = false;
-
   /**
-   * Wire up all portal event listeners once.
+   * Wire up all portal event listeners. Overwrites properties to avoid duplicates/stale closures.
    */
   const setupEventListeners = () => {
-    if (listenersSetup) return;
-    listenersSetup = true;
-
     // Canvas click → pin placement or pin click (via event delegation)
     const canvas = document.getElementById('previewCanvas');
     if (canvas) {
-      canvas.addEventListener('click', handleCanvasClick);
+      canvas.onclick = handleCanvasClick;
     }
 
     // Add comment button
     const btnAddComment = document.getElementById('btnAddComment');
     if (btnAddComment) {
-      btnAddComment.addEventListener('click', addComment);
+      btnAddComment.onclick = addComment;
     }
 
     // Enter key in comment input
     const commentInput = document.getElementById('commentInput');
     if (commentInput) {
-      commentInput.addEventListener('keydown', (e) => {
+      commentInput.onkeydown = (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
           addComment();
         }
-      });
+      };
     }
 
     // Pay invoice button
     const btnPayInvoice = document.getElementById('btnPayInvoice');
     if (btnPayInvoice) {
-      btnPayInvoice.addEventListener('click', () => {
+      btnPayInvoice.onclick = () => {
         if (milestone && milestone.status === 'paid') {
           window.location.href = `/api/milestones/${milestone.id}/download`;
         } else {
           openCheckout();
         }
-      });
+      };
     }
 
     // Checkout modal close button
     const closeCheckoutModal = document.getElementById('closeCheckoutModal');
     if (closeCheckoutModal) {
-      closeCheckoutModal.addEventListener('click', closeCheckout);
+      closeCheckoutModal.onclick = closeCheckout;
     }
 
     // Checkout Success download action
     const btnDownloadFiles = document.getElementById('btnDownloadFiles');
     if (btnDownloadFiles) {
-      btnDownloadFiles.addEventListener('click', () => {
+      btnDownloadFiles.onclick = () => {
         if (milestone) {
           window.location.href = `/api/milestones/${milestone.id}/download`;
         }
         closeCheckout();
-      });
+      };
     }
 
     const btnCloseSuccess = document.getElementById('btnCloseSuccess');
     if (btnCloseSuccess) {
-      btnCloseSuccess.addEventListener('click', closeCheckout);
+      btnCloseSuccess.onclick = closeCheckout;
     }
   };
 

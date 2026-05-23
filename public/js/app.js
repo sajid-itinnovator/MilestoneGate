@@ -63,16 +63,7 @@ const App = (() => {
     Object.assign(ms, updates);
   };
 
-  /**
-   * Add a brand-new milestone locally and refresh the dashboard view.
-   * @param {object} milestone
-   */
-  const addMilestone = (milestone) => {
-    state.milestones.push(milestone);
-    if (state.currentView === 'dashboard' && typeof Dashboard !== 'undefined') {
-      Dashboard.init();
-    }
-  };
+
 
   /* ------------------------------------------------------------------ */
   /*  Toast Notification System                                          */
@@ -346,7 +337,6 @@ const App = (() => {
     loadMilestones,
     getMilestone,
     updateMilestone,
-    addMilestone,
   };
 })();
 
