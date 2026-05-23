@@ -273,7 +273,8 @@ app.post('/api/milestones/:id/checkout', async (req, res) => {
 
     // Fail-safe demo bypass if Stripe key is placeholder
     if (process.env.STRIPE_SECRET_KEY === 'sk_test_placeholder_key_replace_me') {
-      console.log(`⚠️ Stripe Sandbox: Placeholder secret key detected. Simulating checkout url callback.`);
+      console.log(`⚠️ Stripe Sandbox: Placeholder secret key detected. Updating status to PAID and simulating checkout url callback.`);
+      await query.run('UPDATE milestones SET status = "paid" WHERE id = ?', [id]);
       const mockCheckoutUrl = `${origin}/#portal/${milestone.id}?payment=success&session_id=mock_session_id`;
       return res.json({ url: mockCheckoutUrl });
     }
