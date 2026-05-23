@@ -1,0 +1,16 @@
+# Dependency directories
+node_modules/
+
+# Files created by server / upload vault
+server/uploads/*
+!server/uploads/.gitkeep
+server/milestonegate.db
+server/milestonegate.db-journal
+
+# Environment variables
+server/.env
+.env
+
+# OS files
+.DS_Store
+Thumbs.db

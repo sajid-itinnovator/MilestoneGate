@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Lock your deliverables. Get paid first. PayGate.io provides a secure review portal for freelancers — clients preview, approve, and pay before accessing source files." />
+  <title>PayGate.io — Secure Freelancer Deliveries</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+
+  <!-- ========== NAVBAR ========== -->
+  <nav class="navbar" aria-label="Main navigation">
+    <a href="#home" class="navbar-brand">
+      <div class="logo-icon">PG</div> PayGate<span style="opacity:0.5">.io</span>
+    </a>
+    <div class="navbar-links" id="navLinks">
+      <a href="#home">Home</a>
+      <a href="#dashboard">Dashboard</a>
+      <a href="#features-section">How It Works</a>
+    </div>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation menu">☰</button>
+  </nav>
+
+  <!-- ================================================================== -->
+  <!-- VIEW 1: LANDING PAGE                                               -->
+  <!-- ================================================================== -->
+  <div id="homeView" class="view active">
+    <div class="container">
+
+      <!-- Hero Section -->
+      <section class="landing-hero">
+        <div class="hero-badge">
+          <span class="badge-dot"></span> Now in Beta — Free for early adopters
+        </div>
+        <h1 class="hero-title">
+          Deliver Work.<br><span class="text-gradient">Get Paid First.</span>
+        </h1>
+        <p class="hero-subtitle">
+          Stop chasing clients. Upload your deliverables to a secure review portal — clients preview, leave feedback, and pay. Files auto-unlock the moment the invoice clears.
+        </p>
+        <div class="hero-actions">
+          <a href="#dashboard" class="btn btn-primary btn-lg">Open Dashboard →</a>
+          <a href="#features-section" class="btn btn-secondary btn-lg">See How It Works</a>
+        </div>
+        <div class="hero-mockup animate-fade-in-scale">
+          <img src="images/paygate-mockup.png" alt="PayGate.io Dashboard Mockup" />
+        </div>
+        <div class="stats-row" id="landingStats">
+          <!-- 3 stat cards rendered by JS -->
+        </div>
+      </section>
+
+      <!-- Features Section -->
+      <section id="features-section" class="features-section">
+        <p class="section-label">How It Works</p>
+        <h2 class="section-title">Your deliverables, <span class="text-gradient">locked until paid</span></h2>
+        <div class="features-grid" id="featuresGrid">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+
+      <!-- ROI Calculator Section -->
+      <section class="roi-section">
+        <p class="section-label">ROI Calculator</p>
+        <h2 class="section-title">Calculate Your <span class="text-gradient-warm">Revenue Leakage</span></h2>
+        <div class="roi-container">
+          <div class="roi-inputs">
+            <div class="roi-form-group">
+              <div class="roi-label-row">
+                <label for="roiMonthlyIncome">Average Monthly Income</label>
+                <span id="valMonthlyIncome">$5,000</span>
+              </div>
+              <input type="range" id="roiMonthlyIncome" min="1000" max="30000" step="500" value="5000" class="roi-slider" />
+            </div>
+            <div class="roi-form-group">
+              <div class="roi-label-row">
+                <label for="roiChasingHours">Hours spent chasing invoices / month</label>
+                <span id="valChasingHours">8h</span>
+              </div>
+              <input type="range" id="roiChasingHours" min="1" max="40" step="1" value="8" class="roi-slider" />
+            </div>
+            <div class="roi-form-group">
+              <div class="roi-label-row">
+                <label for="roiScopeCreepPct">Scope creep or late payment rate</label>
+                <span id="valScopeCreepPct">20%</span>
+              </div>
+              <input type="range" id="roiScopeCreepPct" min="5" max="80" step="5" value="20" class="roi-slider" />
+            </div>
+          </div>
+          <div class="roi-results">
+            <div class="roi-result-card">
+              <div class="roi-result-label">Annual Revenue Leaked</div>
+              <div class="roi-result-value text-gradient-warm" id="resRevenueLeaked">$1,200</div>
+              <div class="roi-result-note">From unpaid revisions and ghosted projects</div>
+            </div>
+            <div class="roi-result-card">
+              <div class="roi-result-label">Time Lost Annually</div>
+              <div class="roi-result-value text-primary" id="resTimeLost">96 hrs</div>
+              <div class="roi-result-note">Spent chasing emails and follow-ups</div>
+            </div>
+            <div class="roi-result-card featured">
+              <div class="roi-result-label">Recovered with PayGate.io</div>
+              <div class="roi-result-value text-gradient" id="resRevenueRecovered">$4,140</div>
+              <div class="roi-result-note">Recovered fees + value of reclaimed time</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Pricing Section -->
+      <section class="pricing-section">
+        <p class="section-label">Simple Pricing</p>
+        <h2 class="section-title">Start free. <span class="text-gradient">Scale when ready.</span></h2>
+        <div class="pricing-grid" id="pricingGrid">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="landing-footer">
+        <p>© 2026 PayGate.io — Built for freelancers who value their work.</p>
+      </footer>
+
+    </div>
+  </div>
+
+  <!-- ================================================================== -->
+  <!-- VIEW 2: FREELANCER DASHBOARD                                       -->
+  <!-- ================================================================== -->
+  <div id="dashboardView" class="view dashboard-view">
+    <div class="container">
+
+      <!-- Dashboard Header -->
+      <div class="dashboard-header">
+        <h1 class="dashboard-title">Dashboard</h1>
+        <button class="btn btn-primary" id="btnCreateMilestone">+ New Milestone</button>
+      </div>
+
+      <!-- Dashboard Stats -->
+      <div class="dashboard-stats" id="dashStats">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Milestones Section -->
+      <div class="milestones-section-header">
+        <h2 class="milestones-section-title">Active Milestones</h2>
+      </div>
+      <div class="milestone-grid" id="milestoneGrid">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Outreach Section -->
+      <div id="outreachSection">
+        <!-- Populated by JS -->
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================================================================== -->
+  <!-- VIEW 3: CLIENT PORTAL                                              -->
+  <!-- ================================================================== -->
+  <div id="portalView" class="view portal-view">
+    <div class="portal-container">
+
+      <!-- Left Column: Preview -->
+      <div class="portal-preview">
+        <div class="portal-preview-header">
+          <h2 class="portal-preview-title" id="portalPreviewTitle">Deliverable Preview</h2>
+          <span class="portal-preview-badge" id="portalStatusBadge">
+            <span class="status-dot"></span> Awaiting Payment
+          </span>
+        </div>
+        <div class="portal-preview-canvas" id="previewCanvas">
+          <div class="watermark-overlay" id="watermarkOverlay"></div>
+          <!-- Preview image/content placed here by JS -->
+        </div>
+        <p style="padding: 12px 20px; font-size: 0.8rem; color: var(--light-text-muted); text-align: center;">
+          Click anywhere on the preview to leave a pin comment
+        </p>
+      </div>
+
+      <!-- Right Column: Sidebar -->
+      <div class="portal-sidebar">
+
+        <!-- Invoice Card -->
+        <div class="portal-info-card" id="invoiceCard">
+          <h3>Invoice Summary</h3>
+          <div id="invoiceDetails">
+            <!-- Populated by JS -->
+          </div>
+          <button class="btn btn-light-primary btn-full" id="btnPayInvoice" style="margin-top: 16px;">
+            ✦ Approve &amp; Pay Invoice
+          </button>
+        </div>
+
+        <!-- Comments Card -->
+        <div class="portal-info-card">
+          <h3>Review Comments <span id="commentCount" style="font-size: 0.8rem; color: var(--light-text-muted); font-weight: 400;"></span></h3>
+          <div class="comments-list" id="commentsList">
+            <!-- Populated by JS -->
+          </div>
+          <div class="comment-input-area" id="commentInputArea">
+            <input type="text" id="commentInput" placeholder="Type your feedback..." />
+            <button class="btn btn-sm btn-light-primary" id="btnAddComment">Pin</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================== -->
+  <!-- MODALS                                                             -->
+  <!-- ================================================================== -->
+
+  <!-- Create Milestone Modal -->
+  <div id="createMilestoneModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Create New Milestone</h2>
+        <button class="modal-close" id="closeCreateModal" aria-label="Close modal">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="msTitle">Project Title</label>
+          <input type="text" id="msTitle" class="form-input" placeholder="e.g. Brand Identity Package" required />
+        </div>
+        <div class="form-group">
+          <label for="msClient">Client Name</label>
+          <input type="text" id="msClient" class="form-input" placeholder="e.g. Sarah Mitchell" required />
+        </div>
+        <div class="form-group">
+          <label for="msClientEmail">Client Email</label>
+          <input type="email" id="msClientEmail" class="form-input" placeholder="e.g. sarah@company.com" />
+        </div>
+        <div class="form-group">
+          <label for="msFileType">Deliverable Type</label>
+          <select id="msFileType" class="form-select">
+            <option value="design">Design / Creative</option>
+            <option value="code">Code / Repository</option>
+            <option value="document">Document / Copy</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="msEmoji">Preview Emoji</label>
+          <select id="msEmoji" class="form-select">
+            <option value="🎨">🎨 Art / Design</option>
+            <option value="💻">💻 Code / Website</option>
+            <option value="📝">📝 Copywriting / Document</option>
+            <option value="🚀">🚀 Launch / Startup</option>
+            <option value="📹">📹 Video / Animation</option>
+            <option value="🎵">🎵 Audio / Podcast</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="msPreviewLabel">Preview Label</label>
+          <input type="text" id="msPreviewLabel" class="form-input" placeholder="e.g. Logo Design Guidelines" />
+        </div>
+        <div class="form-group">
+          <label for="msDueDate">Due Date</label>
+          <input type="date" id="msDueDate" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label for="msAmount">Invoice Amount (USD)</label>
+          <input type="number" id="msAmount" class="form-input" placeholder="2500" required />
+        </div>
+        <div class="form-group">
+          <label for="msDescription">Description</label>
+          <textarea id="msDescription" class="form-textarea" placeholder="Describe the deliverables..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="cancelCreateModal">Cancel</button>
+        <button class="btn btn-primary" id="submitCreateMilestone">Create Milestone</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Checkout Modal -->
+  <div id="checkoutModal" class="modal-backdrop checkout-modal">
+    <div class="modal modal-light">
+      <div class="modal-header">
+        <h2>Complete Payment</h2>
+        <button class="modal-close" id="closeCheckoutModal" aria-label="Close modal">×</button>
+      </div>
+      <div class="modal-body">
+
+        <!-- State 1: Card Form -->
+        <div id="checkoutForm">
+          <div style="text-align:center; margin-bottom:20px;">
+            <p style="font-size:0.8rem; color: var(--light-text-muted);">Amount Due</p>
+            <p id="checkoutAmount" style="font-family:var(--font-display); font-size:2rem; font-weight:700;"></p>
+          </div>
+          <div class="checkout-form-group">
+            <label for="cardNumber">Card Number</label>
+            <input type="text" id="cardNumber" class="checkout-input" placeholder="4242 4242 4242 4242" />
+          </div>
+          <div class="checkout-row">
+            <div class="checkout-form-group">
+              <label for="cardExpiry">Expiry</label>
+              <input type="text" id="cardExpiry" class="checkout-input" placeholder="MM / YY" />
+            </div>
+            <div class="checkout-form-group">
+              <label for="cardCvc">CVC</label>
+              <input type="text" id="cardCvc" class="checkout-input" placeholder="123" />
+            </div>
+          </div>
+          <div class="checkout-form-group">
+            <label for="cardName">Cardholder Name</label>
+            <input type="text" id="cardName" class="checkout-input" placeholder="Full name on card" />
+          </div>
+          <button class="btn btn-success btn-lg btn-full" id="btnProcessPayment">Pay Now</button>
+          <p style="text-align:center; margin-top:12px; font-size:0.7rem; color: var(--light-text-muted);">🔒 Secured with Stripe — PayGate.io</p>
+        </div>
+
+        <!-- State 2: Processing Spinner -->
+        <div class="checkout-processing" id="checkoutProcessing">
+          <div class="spinner"></div>
+          <p>Processing your payment...</p>
+          <p style="font-size:0.75rem; color:var(--light-text-muted);">Do not close this window</p>
+        </div>
+
+        <!-- State 3: Success -->
+        <div class="checkout-success" id="checkoutSuccess">
+          <div class="success-circle">
+            <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" /></svg>
+          </div>
+          <h3>Payment Successful!</h3>
+          <p>Your files are now unlocked and ready to download.</p>
+          <button class="btn btn-light-primary btn-lg" id="btnDownloadFiles">⬇ Download Files</button>
+          <button class="btn btn-ghost" id="btnCloseSuccess" style="color: var(--light-text-muted);">Close</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================== -->
+  <!-- TOAST & CONFETTI CONTAINERS                                        -->
+  <!-- ================================================================== -->
+  <div class="toast-container" id="toastContainer"></div>
+  <div class="confetti-container" id="confettiContainer"></div>
+
+  <!-- ================================================================== -->
+  <!-- SCRIPTS                                                            -->
+  <!-- ================================================================== -->
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/portal.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      App.init();
+    });
+  </script>
+
+</body>
+</html>
