@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="Electron" version="24.0.0" type="device">
+  <diagram id="paygate-arch" name="Page-1">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="&lt;b&gt;MilestoneGate (PayGate.io) Fullstack Architecture&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;fontColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="180" y="20" width="490" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Client Browser Node -->
+        <mxCell id="node_client" value="&lt;b&gt;Client Browser&lt;/b&gt;&lt;br&gt;Vanilla JS / HTML5&lt;br&gt;(Hash Routing, UI State)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6c5ce7;strokeColor=#482ff7;fontColor=#ffffff;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="325" y="80" width="200" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Express Server Node -->
+        <mxCell id="node_server" value="&lt;b&gt;Express Node.js Server&lt;/b&gt;&lt;br&gt;REST APIs, Auth logic&lt;br&gt;&amp;amp; Webhook routes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#20bf6b;strokeColor=#0f964a;fontColor=#ffffff;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="325" y="240" width="200" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Database Node -->
+        <mxCell id="node_db" value="&lt;b&gt;SQLite Database&lt;/b&gt;&lt;br&gt;milestonegate.db&lt;br&gt;(Milestones &amp;amp; Comments)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#3867d6;strokeColor=#2548a6;fontColor=#ffffff;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="170" y="420" width="160" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Secure Storage Node -->
+        <mxCell id="node_storage" value="&lt;b&gt;Multer Deliverables&lt;/b&gt;&lt;br&gt;Protected Vault&lt;br&gt;(server/uploads/)" style="shape=folder;tabWidth=34;tabHeight=15;tabPosition=left;html=1;whiteSpace=wrap;fillColor=#f7b731;strokeColor=#d19210;fontColor=#ffffff;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="520" y="420" width="160" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Stripe API Node -->
+        <mxCell id="node_stripe" value="&lt;b&gt;Stripe Payments API&lt;/b&gt;&lt;br&gt;Hosted Checkout Sessions&lt;br&gt;&amp;amp; Webhook Triggers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#a55eea;strokeColor=#8837d7;fontColor=#ffffff;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="640" y="245" width="180" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Connections (Edges) -->
+        
+        <!-- Client to Server -->
+        <mxCell id="edge_client_server" value="1. Fetch details / Submit Form" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#ffffff;fontColor=#ffffff;fontSize=11;" edge="1" parent="1" source="node_client" target="node_server">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Server to DB -->
+        <mxCell id="edge_server_db" value="2. Store state / Read settings" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#ffffff;fontColor=#ffffff;fontSize=11;" edge="1" parent="1" source="node_server" target="node_db">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Server to Storage -->
+        <mxCell id="edge_server_storage" value="3. Secure upload / Paid stream" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#ffffff;fontColor=#ffffff;fontSize=11;" edge="1" parent="1" source="node_server" target="node_storage">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Server to Stripe -->
+        <mxCell id="edge_server_stripe" value="4. Create session" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.25;entryDx=0;entryDy=0;strokeWidth=2;strokeColor=#ffffff;fontColor=#ffffff;fontSize=11;" edge="1" parent="1" source="node_server" target="node_stripe">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Stripe to Server (Webhook) -->
+        <mxCell id="edge_stripe_server" value="5. Webhook: Completed" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.75;entryDx=0;entryDy=0;strokeWidth=2;strokeColor=#ff7675;dashed=1;fontColor=#ff7675;fontSize=11;" edge="1" parent="1" source="node_stripe" target="node_server">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Client to Stripe (Redirect) -->
+        <mxCell id="edge_client_stripe" value="6. Stripe Checkout Redirect" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=2;strokeColor=#00cec9;dashed=1;fontColor=#00cec9;fontSize=11;" edge="1" parent="1" source="node_client" target="node_stripe">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="730" y="120" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
