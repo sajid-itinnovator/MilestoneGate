@@ -321,7 +321,7 @@ app.get('/api/milestones/:id/download', async (req, res) => {
     }
 
     if (milestone.status !== 'paid') {
-      return res.status(403).json({ error: 'Access Denied: Invoice must be settled before files are unlocked.' });
+      return res.status(403).json({ error: 'Please make a payment to unlock and download the source deliverables.' });
     }
 
     if (!milestone.filePath || !fs.existsSync(milestone.filePath)) {
