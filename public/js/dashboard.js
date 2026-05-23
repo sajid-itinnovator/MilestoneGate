@@ -205,8 +205,8 @@ const Dashboard = (() => {
     if (modal) modal.classList.remove('active');
   };
 
-  /** Validate form, create milestone, and refresh. */
-  const handleCreateSubmit = () => {
+  /** Validate form, upload file, create milestone in database, and refresh. */
+  const handleCreateSubmit = async () => {
     const title = (document.getElementById('msTitle')?.value || '').trim();
     const clientName = (document.getElementById('msClient')?.value || '').trim();
     const clientEmail = (document.getElementById('msClientEmail')?.value || '').trim();
@@ -216,6 +216,9 @@ const Dashboard = (() => {
     const previewEmoji = (document.getElementById('msEmoji')?.value || '🎨').trim();
     const dueDate = (document.getElementById('msDueDate')?.value || '');
     const previewLabel = (document.getElementById('msPreviewLabel')?.value || title).trim();
+
+    const fileInput = document.getElementById('msSourceFile');
+    const sourceFile = fileInput ? fileInput.files[0] : null;
 
     // Validation
     if (!title || !clientName || !amountRaw) {
@@ -229,33 +232,61 @@ const Dashboard = (() => {
       return;
     }
 
-    const milestone = {
-      id: generateId(),
-      title,
-      clientName,
-      clientEmail,
-      amount,
-      fileType,
-      description,
-      previewEmoji: previewEmoji || '🎨',
-      previewLabel: previewLabel || title,
-      status: 'pending',
-      comments: [],
-      createdAt: new Date().toISOString(),
-      dueDate: dueDate || null,
-    };
+    if (!sourceFile) {
+      App.toast.show('Please select a source deliverable file to lock.', 'error');
+      return;
+    }
 
-    App.addMilestone(milestone);
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('clientName', clientName);
+    formData.append('clientEmail', clientEmail);
+    formData.append('amount', amount);
+    formData.append('fileType', fileType);
+    formData.append('description', description);
+    formData.append('previewEmoji', previewEmoji);
+    formData.append('previewLabel', previewLabel);
+    formData.append('dueDate', dueDate);
+    formData.append('sourceFile', sourceFile);
 
-    // Clear form
-    ['msTitle', 'msClient', 'msClientEmail', 'msAmount', 'msDescription', 'msEmoji', 'msDueDate', 'msPreviewLabel'].forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) el.value = '';
-    });
+    const btnSubmit = document.getElementById('submitCreateMilestone');
+    if (btnSubmit) {
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = 'Uploading...';
+    }
 
-    closeCreateModal();
-    App.toast.show('Milestone created successfully!', 'success');
-    init(); // refresh dashboard
+    try {
+      const response = await fetch('/api/milestones', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        await App.loadMilestones();
+
+        // Clear form
+        ['msTitle', 'msClient', 'msClientEmail', 'msAmount', 'msDescription', 'msEmoji', 'msDueDate', 'msPreviewLabel'].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.value = '';
+        });
+        if (fileInput) fileInput.value = '';
+
+        closeCreateModal();
+        App.toast.show('Milestone created & deliverable locked successfully!', 'success');
+        init(); // refresh dashboard
+      } else {
+        const errData = await response.json();
+        App.toast.show(errData.error || 'Failed to upload milestone.', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      App.toast.show('Network error while uploading deliverable.', 'error');
+    } finally {
+      if (btnSubmit) {
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = 'Create Milestone';
+      }
+    }
   };
 
   /* ------------------------------------------------------------------ */

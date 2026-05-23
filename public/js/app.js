@@ -30,27 +30,30 @@ const App = (() => {
   /* ------------------------------------------------------------------ */
 
   /**
-   * Persist only user-created milestones (non-sample) to localStorage.
+   * Fetch all milestones from the server database.
    */
-  const saveMilestones = () => {
-    const sampleIds = new Set(SAMPLE_MILESTONES.map((m) => m.id));
-    const userMilestones = state.milestones.filter((m) => !sampleIds.has(m.id));
+  const loadMilestones = async () => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(userMilestones));
+      const res = await fetch('/api/milestones');
+      if (res.ok) {
+        state.milestones = await res.json();
+      } else {
+        console.error('Failed to load milestones from server');
+      }
     } catch (err) {
-      console.error('Failed to save milestones:', err);
+      console.error('Network error loading milestones:', err);
     }
   };
 
   /**
-   * Find a milestone by its ID.
+   * Find a milestone in the local state.
    * @param {string} id
    * @returns {object|undefined}
    */
   const getMilestone = (id) => state.milestones.find((m) => m.id === id);
 
   /**
-   * Merge partial updates into a milestone and persist.
+   * Merge partial updates into a milestone in the local state.
    * @param {string} id
    * @param {object} updates
    */
@@ -58,16 +61,14 @@ const App = (() => {
     const ms = getMilestone(id);
     if (!ms) return;
     Object.assign(ms, updates);
-    saveMilestones();
   };
 
   /**
-   * Add a brand-new milestone, persist, and refresh the dashboard.
+   * Add a brand-new milestone locally and refresh the dashboard view.
    * @param {object} milestone
    */
   const addMilestone = (milestone) => {
     state.milestones.push(milestone);
-    saveMilestones();
     if (state.currentView === 'dashboard' && typeof Dashboard !== 'undefined') {
       Dashboard.init();
     }
@@ -169,9 +170,10 @@ const App = (() => {
 
       // Delegate to sub-controllers
       if (route === 'portal') {
-        const milestoneId = parts[1] || '';
+        const idWithQuery = parts[1] || '';
+        const milestoneId = idWithQuery.split('?')[0];
         state.activePortalId = milestoneId;
-        if (typeof Portal !== 'undefined') Portal.init(milestoneId);
+        if (typeof Portal !== 'undefined') Portal.init(idWithQuery);
       } else if (route === 'dashboard') {
         if (typeof Dashboard !== 'undefined') Dashboard.init();
       } else {
@@ -317,22 +319,9 @@ const App = (() => {
   /* ------------------------------------------------------------------ */
 
   /** Boot the application. */
-  const init = () => {
-    // Load user milestones from localStorage
-    let userMilestones = [];
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) userMilestones = JSON.parse(stored);
-    } catch (err) {
-      console.warn('Could not parse stored milestones:', err);
-    }
-
-    // Merge samples + user milestones (avoid duplicate sample IDs)
-    const sampleIds = new Set(SAMPLE_MILESTONES.map((m) => m.id));
-    state.milestones = [
-      ...SAMPLE_MILESTONES,
-      ...userMilestones.filter((m) => !sampleIds.has(m.id)),
-    ];
+  const init = async () => {
+    // Load milestones from server
+    await loadMilestones();
 
     // Wire up hashchange
     window.addEventListener('hashchange', () => router.handleRoute());
@@ -354,7 +343,7 @@ const App = (() => {
     toast,
     init,
     renderLanding,
-    saveMilestones,
+    loadMilestones,
     getMilestone,
     updateMilestone,
     addMilestone,

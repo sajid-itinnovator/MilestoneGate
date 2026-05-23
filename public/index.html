@@ -264,6 +264,10 @@
           <input type="date" id="msDueDate" class="form-input" />
         </div>
         <div class="form-group">
+          <label for="msSourceFile">Source Deliverable File (Locked until paid)</label>
+          <input type="file" id="msSourceFile" class="form-input" required />
+        </div>
+        <div class="form-group">
           <label for="msAmount">Invoice Amount (USD)</label>
           <input type="number" id="msAmount" class="form-input" placeholder="2500" required />
         </div>
@@ -283,55 +287,27 @@
   <div id="checkoutModal" class="modal-backdrop checkout-modal">
     <div class="modal modal-light">
       <div class="modal-header">
-        <h2>Complete Payment</h2>
+        <h2>Secure Checkout</h2>
         <button class="modal-close" id="closeCheckoutModal" aria-label="Close modal">×</button>
       </div>
       <div class="modal-body">
 
-        <!-- State 1: Card Form -->
-        <div id="checkoutForm">
-          <div style="text-align:center; margin-bottom:20px;">
-            <p style="font-size:0.8rem; color: var(--light-text-muted);">Amount Due</p>
-            <p id="checkoutAmount" style="font-family:var(--font-display); font-size:2rem; font-weight:700;"></p>
-          </div>
-          <div class="checkout-form-group">
-            <label for="cardNumber">Card Number</label>
-            <input type="text" id="cardNumber" class="checkout-input" placeholder="4242 4242 4242 4242" />
-          </div>
-          <div class="checkout-row">
-            <div class="checkout-form-group">
-              <label for="cardExpiry">Expiry</label>
-              <input type="text" id="cardExpiry" class="checkout-input" placeholder="MM / YY" />
-            </div>
-            <div class="checkout-form-group">
-              <label for="cardCvc">CVC</label>
-              <input type="text" id="cardCvc" class="checkout-input" placeholder="123" />
-            </div>
-          </div>
-          <div class="checkout-form-group">
-            <label for="cardName">Cardholder Name</label>
-            <input type="text" id="cardName" class="checkout-input" placeholder="Full name on card" />
-          </div>
-          <button class="btn btn-success btn-lg btn-full" id="btnProcessPayment">Pay Now</button>
-          <p style="text-align:center; margin-top:12px; font-size:0.7rem; color: var(--light-text-muted);">🔒 Secured with Stripe — PayGate.io</p>
-        </div>
-
-        <!-- State 2: Processing Spinner -->
-        <div class="checkout-processing" id="checkoutProcessing">
+        <!-- State 1: Redirecting Spinner -->
+        <div class="checkout-processing active" id="checkoutProcessing">
           <div class="spinner"></div>
-          <p>Processing your payment...</p>
-          <p style="font-size:0.75rem; color:var(--light-text-muted);">Do not close this window</p>
+          <p>Redirecting to secure Stripe checkout...</p>
+          <p style="font-size:0.75rem; color:var(--light-text-muted);">Please wait</p>
         </div>
 
-        <!-- State 3: Success -->
+        <!-- State 2: Success -->
         <div class="checkout-success" id="checkoutSuccess">
           <div class="success-circle">
             <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" /></svg>
           </div>
           <h3>Payment Successful!</h3>
           <p>Your files are now unlocked and ready to download.</p>
-          <button class="btn btn-light-primary btn-lg" id="btnDownloadFiles">⬇ Download Files</button>
-          <button class="btn btn-ghost" id="btnCloseSuccess" style="color: var(--light-text-muted);">Close</button>
+          <button class="btn btn-light-primary btn-lg btn-full" id="btnDownloadFiles" style="margin-top: 16px;">⬇ Download Files</button>
+          <button class="btn btn-ghost" id="btnCloseSuccess" style="color: var(--light-text-muted); margin-top: 8px;">Close</button>
         </div>
 
       </div>

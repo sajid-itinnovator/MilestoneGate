@@ -25,18 +25,31 @@ const Portal = (() => {
 
   /**
    * Boot the portal for a given milestone.
-   * @param {string} milestoneId
+   * @param {string} idWithQuery — milestone ID potentially with query parameters
    */
-  const init = (milestoneId) => {
-    milestone = App.getMilestone(milestoneId);
+  const init = async (idWithQuery) => {
+    const [milestoneId, queryStr] = idWithQuery.split('?');
+    const params = new URLSearchParams(queryStr || '');
+    const isPaymentSuccess = params.get('payment') === 'success';
 
-    if (!milestone) {
-      App.toast.show('Milestone not found.', 'error');
+    pendingPin = null;
+
+    // Load milestone details from Express backend
+    try {
+      const res = await fetch(`/api/milestones/${milestoneId}`);
+      if (res.ok) {
+        milestone = await res.json();
+      } else {
+        App.toast.show('Milestone not found.', 'error');
+        App.router.navigate('#dashboard');
+        return;
+      }
+    } catch (err) {
+      console.error('Failed to load milestone:', err);
+      App.toast.show('Failed to connect to the server.', 'error');
       App.router.navigate('#dashboard');
       return;
     }
-
-    pendingPin = null;
 
     renderPreview();
     renderInvoice();
@@ -44,6 +57,20 @@ const Portal = (() => {
     setupEventListeners();
 
     if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    // Check if the client just returned from a successful Stripe checkout session
+    if (isPaymentSuccess) {
+      // Clean up the URL query parameters from the hash
+      App.router.navigate(`#portal/${milestoneId}`);
+
+      // Update state locally and trigger success dialog
+      milestone.status = 'paid';
+      renderPreview();
+      renderInvoice();
+      renderComments();
+
+      openPaymentSuccessView();
+    }
   };
 
   /* ------------------------------------------------------------------ */
@@ -183,11 +210,13 @@ const Portal = (() => {
     const payBtn = document.getElementById('btnPayInvoice');
     if (payBtn) {
       if (milestone.status === 'paid') {
-        payBtn.disabled = true;
-        payBtn.textContent = '✓ Paid';
+        payBtn.disabled = false;
+        payBtn.className = 'btn btn-success btn-full';
+        payBtn.innerHTML = '⬇ Download Deliverables';
       } else {
         payBtn.disabled = false;
-        payBtn.textContent = 'Pay Invoice';
+        payBtn.className = 'btn btn-light-primary btn-full';
+        payBtn.innerHTML = '✦ Approve &amp; Pay Invoice';
       }
     }
   };
@@ -304,34 +333,52 @@ const Portal = (() => {
   /* ------------------------------------------------------------------ */
 
   /** Submit a new comment using the pending pin location. */
-  const addComment = () => {
+  const addComment = async () => {
     const input = document.getElementById('commentInput');
     const text = (input?.value || '').trim();
 
     if (!text || !pendingPin) return;
 
-    const comment = {
-      id: generateId(),
+    const body = {
       pinX: pendingPin.x,
       pinY: pendingPin.y,
       text,
-      author: 'Client',
-      createdAt: new Date().toISOString(),
+      author: 'Client'
     };
 
-    milestone.comments.push(comment);
-    App.updateMilestone(milestone.id, { comments: milestone.comments });
+    try {
+      const response = await fetch(`/api/milestones/${milestone.id}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
 
-    // Cleanup
-    input.value = '';
-    pendingPin = null;
+      if (response.ok) {
+        const newComment = await response.json();
+        
+        if (!milestone.comments) {
+          milestone.comments = [];
+        }
+        milestone.comments.push(newComment);
 
-    // Remove temp pin
-    const canvas = document.getElementById('previewCanvas');
-    if (canvas) canvas.querySelectorAll('.comment-pin.temp-pin').forEach((p) => p.remove());
+        // Cleanup
+        input.value = '';
+        pendingPin = null;
 
-    renderComments();
-    App.toast.show('Comment added', 'success');
+        // Remove temp pin
+        const canvas = document.getElementById('previewCanvas');
+        if (canvas) canvas.querySelectorAll('.comment-pin.temp-pin').forEach((p) => p.remove());
+
+        renderComments();
+        App.toast.show('Comment added', 'success');
+      } else {
+        const errData = await response.json();
+        App.toast.show(errData.error || 'Failed to add comment.', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      App.toast.show('Network error while saving comment.', 'error');
+    }
   };
 
   /* ------------------------------------------------------------------ */
@@ -352,88 +399,80 @@ const Portal = (() => {
   };
 
   /* ------------------------------------------------------------------ */
-  /*  Checkout Flow                                                      */
+  /*  Checkout & Redirection Flow                                         */
   /* ------------------------------------------------------------------ */
 
-  /** Open the checkout modal. */
-  const openCheckout = () => {
+  /** Initiate Stripe Hosted Checkout redirection. */
+  const openCheckout = async () => {
     if (!milestone || milestone.status === 'paid') return;
 
+    // Open Checkout modal and set processing state
     const modal = document.getElementById('checkoutModal');
     if (modal) modal.classList.add('active');
 
-    const amountEl = document.getElementById('checkoutAmount');
-    if (amountEl) amountEl.textContent = formatCurrency(milestone.amount);
-
-    // Reset checkout to form state
-    resetCheckoutStates();
-  };
-
-  /** Close the checkout modal and reset internal states. */
-  const closeCheckout = () => {
-    const modal = document.getElementById('checkoutModal');
-    if (modal) modal.classList.remove('active');
-    resetCheckoutStates();
-  };
-
-  /** Ensure only the form step is visible. */
-  const resetCheckoutStates = () => {
-    const form = document.getElementById('checkoutForm');
     const processing = document.getElementById('checkoutProcessing');
     const success = document.getElementById('checkoutSuccess');
 
-    if (form) { form.classList.add('active'); form.style.display = ''; }
-    if (processing) { processing.classList.remove('active'); processing.style.display = ''; }
-    if (success) { success.classList.remove('active'); success.style.display = ''; }
-  };
-
-  /** Process the simulated payment. */
-  const processPayment = () => {
-    // Basic validation — ensure card fields are non-empty
-    const fields = ['cardName', 'cardNumber', 'cardExpiry', 'cardCvc'];
-    for (const fieldId of fields) {
-      const el = document.getElementById(fieldId);
-      if (!el || !el.value.trim()) {
-        App.toast.show('Please fill in all card details.', 'error');
-        return;
-      }
+    if (processing) {
+      processing.classList.add('active');
+      processing.style.display = 'block';
+    }
+    if (success) {
+      success.classList.remove('active');
+      success.style.display = 'none';
     }
 
-    // Transition: form → processing
-    const form = document.getElementById('checkoutForm');
-    const processing = document.getElementById('checkoutProcessing');
-    if (form) form.classList.remove('active');
-    if (processing) processing.classList.add('active');
+    try {
+      const response = await fetch(`/api/milestones/${milestone.id}/checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
 
-    // Simulate payment processing delay
-    setTimeout(() => {
-      // Transition: processing → success
-      if (processing) processing.classList.remove('active');
-      const success = document.getElementById('checkoutSuccess');
-      if (success) success.classList.add('active');
-
-      // Mark milestone as paid
-      App.updateMilestone(milestone.id, { status: 'paid' });
-      milestone = App.getMilestone(milestone.id); // refresh reference
-
-      // Remove watermark (CSS transition)
-      const overlay = document.getElementById('watermarkOverlay');
-      if (overlay) overlay.classList.add('removed');
-
-      // Update status badge
-      updateStatusBadge();
-
-      // Disable pay button
-      const payBtn = document.getElementById('btnPayInvoice');
-      if (payBtn) {
-        payBtn.disabled = true;
-        payBtn.textContent = '✓ Paid';
+      if (response.ok) {
+        const data = await response.json();
+        if (data.url) {
+          // Redirect the user's browser tab to Stripe Checkout hosted portal
+          window.location.href = data.url;
+        } else {
+          throw new Error('No redirection URL returned from payment server.');
+        }
+      } else {
+        const errData = await response.json();
+        throw new Error(errData.error || 'Could not initialize payment.');
       }
+    } catch (err) {
+      console.error(err);
+      App.toast.show(err.message || 'Payment system offline. Please try again.', 'error');
+      closeCheckout();
+    }
+  };
 
-      // 🎉 Celebration
-      fireConfetti();
-      App.toast.show('Payment successful! Files unlocked.', 'success');
-    }, 2500);
+  /** Close the checkout modal. */
+  const closeCheckout = () => {
+    const modal = document.getElementById('checkoutModal');
+    if (modal) modal.classList.remove('active');
+  };
+
+  /** Show payment success celebration dialog */
+  const openPaymentSuccessView = () => {
+    const modal = document.getElementById('checkoutModal');
+    if (modal) modal.classList.add('active');
+
+    const processing = document.getElementById('checkoutProcessing');
+    const success = document.getElementById('checkoutSuccess');
+
+    if (processing) {
+      processing.classList.remove('active');
+      processing.style.display = 'none';
+    }
+    if (success) {
+      success.classList.add('active');
+      success.style.display = 'block';
+    }
+
+    // Celebratory confetti and toast
+    fireConfetti();
+    App.toast.show('Payment successful! Your files are unlocked.', 'success');
   };
 
   /* ------------------------------------------------------------------ */
@@ -515,27 +554,31 @@ const Portal = (() => {
       });
     }
 
-    // Pay invoice
+    // Pay invoice button
     const btnPayInvoice = document.getElementById('btnPayInvoice');
     if (btnPayInvoice) {
-      btnPayInvoice.addEventListener('click', openCheckout);
+      btnPayInvoice.addEventListener('click', () => {
+        if (milestone && milestone.status === 'paid') {
+          window.location.href = `/api/milestones/${milestone.id}/download`;
+        } else {
+          openCheckout();
+        }
+      });
     }
 
-    // Checkout modal controls
+    // Checkout modal close button
     const closeCheckoutModal = document.getElementById('closeCheckoutModal');
     if (closeCheckoutModal) {
       closeCheckoutModal.addEventListener('click', closeCheckout);
     }
 
-    const btnProcessPayment = document.getElementById('btnProcessPayment');
-    if (btnProcessPayment) {
-      btnProcessPayment.addEventListener('click', processPayment);
-    }
-
+    // Checkout Success download action
     const btnDownloadFiles = document.getElementById('btnDownloadFiles');
     if (btnDownloadFiles) {
       btnDownloadFiles.addEventListener('click', () => {
-        App.toast.show('Download started — source files delivered!', 'success');
+        if (milestone) {
+          window.location.href = `/api/milestones/${milestone.id}/download`;
+        }
         closeCheckout();
       });
     }
